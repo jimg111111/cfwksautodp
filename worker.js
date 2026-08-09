@@ -1390,6 +1390,28 @@ function mainHtml() {
                 </div>
             </div>
 
+            <div class="bg-white rounded shadow border-t-4 border-blue-500 project-card">
+                <div class="bg-blue-50 px-4 py-2 flex justify-between items-center border-b border-blue-100">
+                    <div class="flex items-center gap-2"><span class="text-sm font-bold text-blue-700">zj52 配置</span><span id="badge_zj52" class="text-[9px] px-1.5 py-0.5 rounded text-white bg-gray-400">Loading</span></div>
+                    <button onclick="openVersionHistory('zj52')" class="text-[10px] bg-white border border-blue-200 text-blue-600 px-2 py-0.5 rounded hover:bg-blue-50">📜 历史/收藏</button>
+                </div>
+                <div class="p-3">
+                    <div id="ver_zj52" class="text-[10px] font-mono text-gray-500 mb-2 border-b border-gray-100 pb-2 space-y-1">Checking...</div>
+                    <details class="group bg-slate-50 rounded border mb-2">
+                        <summary class="bg-slate-100 px-2 py-1 text-xs font-bold text-gray-600 flex justify-between"><span>📝 变量列表</span><span>▼</span></summary>
+                        <div id="vars_zj52" class="p-2 space-y-1 max-h-[200px] overflow-y-auto"></div>
+                    </details>
+                    <div class="flex gap-2 mb-2">
+                        <button onclick="addVarRow('zj52')" class="flex-1 bg-dashed border text-gray-400 text-xs py-1 rounded hover:text-gray-600">➕ 变量</button>
+                        <button onclick="selectSyncAccount('zj52')" class="flex-none bg-orange-50 text-orange-600 border border-orange-200 text-xs px-2 py-1 rounded">🔄 同步</button>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="refreshUUID('zj52')" class="flex-1 bg-gray-100 text-gray-600 text-xs py-1.5 rounded">🎲 刷 UUID</button>
+                        <button onclick="deploy('zj52')" id="btn_deploy_zj52" class="flex-[2] bg-blue-600 text-white text-xs py-1.5 rounded font-bold hover:bg-blue-700">🚀 部署更新</button>
+                    </div>
+                </div>
+            </div>
+            
             <div class="bg-white rounded shadow border-t-4 border-green-500 project-card">
                 <div class="bg-green-50 px-4 py-2 flex justify-between items-center border-b border-green-100"><span class="text-sm font-bold text-green-700">🟢 ECH 配置</span><span class="text-[9px] px-1.5 py-0.5 rounded text-white bg-green-500">Stable</span></div>
                 <div class="p-3">
