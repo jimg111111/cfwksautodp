@@ -32,8 +32,8 @@ const TEMPLATES = {
     'zj52': {
         name: "zj52",
         ghUser: "jimg111111",
-        ghRepo: "GitHubPages",
-        ghBranch: "main",
+        ghRepo: "cfwksautodp",
+        ghBranch: "frprsn",
         ghPath: "5e4d89c2-5283-4bd6-893c-411926fcf722/zj52.js",
         defaultVars: [],
         description: "五协议二传输队列上行 - 缓存发送 - 路径speed限速"
@@ -41,8 +41,8 @@ const TEMPLATES = {
     'ts15': {
         name: "ts15",
         ghUser: "jimg111111",
-        ghRepo: "GitHubPages",
-        ghBranch: "main",
+        ghRepo: "cfwksautodp",
+        ghBranch: "frprsn",
         ghPath: "99ad70ba-456a-4138-812d-0315af64cb8b/ts15.js",
         defaultVars: [],
         description: "天书15自用动态负载 - 全局队列单路"
@@ -50,8 +50,8 @@ const TEMPLATES = {
     'cdqc-dxc': {
         name: "cdqc-dxc",
         ghUser: "jimg111111",
-        ghRepo: "GitHubPages",
-        ghBranch: "main",
+        ghRepo: "cfwksautodp",
+        ghBranch: "frprsn",
         ghPath: "a01a51ab-749f-4a07-a691-7a75acfc9c14/cdqc-dxc.js",
         defaultVars: [],
         description: "cdqc-单线程无限终结版"
