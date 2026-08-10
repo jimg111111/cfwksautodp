@@ -27,9 +27,9 @@ const uuid = '5e4d89c2-5283-4bd6-893c-411926fcf722';//vless使用的uuid
 //**警告**:trojan使用的sha224密钥，需要自己计算，当前设置为密码666的密钥
 //**警告**:trojan使用的sha224密钥计算网址：https://www.lzltool.com/data-sha224
 const passWordSha224 = '509eece82eb6910bebef9af9496092d3244b6c0d69ef3aaa4b12c565';
-const socks5AndHttpUser = 'admin666';     //socsk5和http协议用户名，设置为空即为无密码验证，需要客户端也为空
-const socks5AndHttpPass = '123456666';    //socsk5和http协议密码，设置为空即为无密码验证，需要客户端也为空
-const ssAeadPassword = '123456666';       // ss协议 aes-128-gcm 密码（notls）
+const socks5AndHttpUser = 'admin';     //socsk5和http协议用户名，设置为空即为无密码验证，需要客户端也为空
+const socks5AndHttpPass = '123456';    //socsk5和http协议密码，设置为空即为无密码验证，需要客户端也为空
+const ssAeadPassword = '123456';       // ss协议 aes-128-gcm 密码（notls）
 // ---------------------------------------------------------------------------------
 // 理论最低带宽计算公式 (Theoretical Max Bandwidth Calculation):
 //    - 速度上限 (Mbps) = (bufferSize (字节) / flushTime (毫秒)) * 0.008
@@ -2360,6 +2360,15 @@ const handleWebSocketConn = async (webSocket, request) => {
     webSocket.addEventListener("close", close);
 };
 const xhttpHeaders = {'Content-Type': 'application/octet-stream', 'grpc-status': '0', 'X-Accel-Buffering': 'no', 'Cache-Control': 'no-store'};
+const generateRandomBase64 = () => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+    const len = Math.floor(Math.random() * (128 - 16 + 1)) + 16;
+    let result = '';
+    for (let i = 0; i < len; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+};
 const pipeToWithPrefix = async (readable, writable, prefixes, options) => {
     const writer = writable.getWriter();
     try {
@@ -2431,7 +2440,9 @@ const handleXhttpPost = async (request) => {
             used += value.byteLength;
         }
     })().catch(close);
-    return new Response(bridge.readable, {headers: xhttpHeaders});
+    const reqUrl = new URL(request.url);
+    const ResponseUrl = `${reqUrl.origin}/?bs64=${generateRandomBase64()}`;
+    return new Response(bridge.readable, {headers: {...xhttpHeaders, 'ResponseUrl': ResponseUrl}});
 };
 export default {
     async fetch(request) {
