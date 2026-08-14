@@ -15,7 +15,7 @@ const TEMPLATES = {
         ghRepo: "edgetunnel",
         ghBranch: "main",
         ghPath: "_worker.js",
-        defaultVars: ["UUID", "PROXYIP", "DOH", "PATH", "URL", "KEY", "ADMIN"],
+        defaultVars: ["ADMIN"],
         uuidField: "UUID",
         description: "CMliu (main) - 建议开启 KV"
     },
