@@ -64,23 +64,23 @@ const urlParamCacheLimit = 20;//URL参数解析结果缓存条数
 const proxyStrategyOrder = ['socks', 'http', 'https', 'sstp', 'turn', 'turns', 'nat64'];
 const dohEndpoints = ['https://cloudflare-dns.com/dns-query', 'https://dns.google/dns-query'];
 const dohNatEndpoints = ['https://cloudflare-dns.com/dns-query', 'https://dns.google/resolve'];
-const proxyIpAddrs = {EU: 'eu.proxy.58807.de5.net', AS: 'sg.proxy.58807.de5.net', JP: 'jp.proxy.58807.de5.net', US: 'us.proxy.58807.de5.net'};//分区域proxyip
-const finallyProxyHost = 'proxy.58807.de5.net';//兜底proxyip
-const coloRegions = {
-    JP: new Set(['FUK', 'ICN', 'KIX', 'NRT', 'OKA']),
-    EU: new Set([
-        'ACC', 'ADB', 'ALA', 'ALG', 'AMM', 'AMS', 'ARN', 'ATH', 'BAH', 'BCN', 'BEG', 'BGW', 'BOD', 'BRU', 'BTS', 'BUD', 'CAI',
-        'CDG', 'CPH', 'CPT', 'DAR', 'DKR', 'DMM', 'DOH', 'DUB', 'DUR', 'DUS', 'DXB', 'EBB', 'EDI', 'EVN', 'FCO', 'FRA', 'GOT',
-        'GVA', 'HAM', 'HEL', 'HRE', 'IST', 'JED', 'JIB', 'JNB', 'KBP', 'KEF', 'KWI', 'LAD', 'LED', 'LHR', 'LIS', 'LOS', 'LUX',
-        'LYS', 'MAD', 'MAN', 'MCT', 'MPM', 'MRS', 'MUC', 'MXP', 'NBO', 'OSL', 'OTP', 'PMO', 'PRG', 'RIX', 'RUH', 'RUN', 'SKG',
-        'SOF', 'STR', 'TBS', 'TLL', 'TLV', 'TUN', 'VIE', 'VNO', 'WAW', 'ZAG', 'ZRH']),
-    AS: new Set([
-        'ADL', 'AKL', 'AMD', 'BKK', 'BLR', 'BNE', 'BOM', 'CBR', 'CCU', 'CEB', 'CGK', 'CMB', 'COK', 'DAC', 'DEL', 'HAN', 'HKG',
-        'HYD', 'ISB', 'JHB', 'JOG', 'KCH', 'KHH', 'KHI', 'KTM', 'KUL', 'LHE', 'MAA', 'MEL', 'MFM', 'MLE', 'MNL', 'NAG', 'NOU',
-        'PAT', 'PBH', 'PER', 'PNH', 'SGN', 'SIN', 'SYD', 'TPE', 'ULN', 'VTE'])
+const finallyProxyHost = 'proxy.zjcloud.us.ci';//兜底proxyip
+let currentColo = null;
+const getCurrentColo = async () => {
+    if (currentColo !== null) return currentColo;
+    try {
+        const text = await fetch('https://cp.cloudflare.com/cdn-cgi/trace', {
+            headers: {'User-Agent': 'Mozilla/5.0'}
+        }).then(r => r.text());
+        const i = text.indexOf('colo=');
+        const colo = i >= 0 ? text.slice(i + 5, i + 8) : '';
+        currentColo = colo ? `${colo.toLowerCase()}.proxy.zjcloud.us.ci` : '';
+        return currentColo;
+    } catch {
+        currentColo = null;
+        return '';
+    }
 };
-const coloToProxyMap = new Map();
-for (const [region, colos] of Object.entries(coloRegions)) {for (const colo of colos) coloToProxyMap.set(colo, proxyIpAddrs[region])}
 const uuidBytes = new Uint8Array(16), hashBytes = new Uint8Array(56), offsets = [0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 4, 4, 4, 4];
 for (let i = 0, c; i < 16; i++) uuidBytes[i] = (((c = uuid.charCodeAt(i * 2 + offsets[i])) > 64 ? c + 9 : c) & 0xF) << 4 | (((c = uuid.charCodeAt(i * 2 + offsets[i] + 1)) > 64 ? c + 9 : c) & 0xF);
 for (let i = 0; i < 56; i++) hashBytes[i] = passWordSha224.charCodeAt(i);
@@ -1966,6 +1966,7 @@ const txtdnsResult = async (txtdns) => {
 };
 const proxyIpRegex = /william|fxpip|hhtxt/;
 const connectProxyIp = async (param, limit, txt) => {
+    if (param === undefined) param = await getCurrentColo() || finallyProxyHost;
     if (txt || proxyIpRegex.test(param)) {
         let resolvedIps = await txtdnsResult(param);
         if (!resolvedIps || resolvedIps.length === 0) return null;
@@ -2043,7 +2044,7 @@ const establishTcpConnection = async (parsedRequest, request) => {
         list = cachedResult.list, speed = cachedResult.speed;
     } else {
         if (clean.length < 6) {
-            list.push({type: 0}, {type: 3, param: coloToProxyMap.get(request.cf?.colo) ?? proxyIpAddrs.US}, {type: 3, param: finallyProxyHost});
+            list.push({type: 0}, {type: 3}, {type: 3, param: finallyProxyHost});
         } else {
             const p = Object.create(null);
             paramRegex.lastIndex = 0;
@@ -2079,7 +2080,7 @@ const establishTcpConnection = async (parsedRequest, request) => {
                 if (!list.length) list.push({type: 0});
             } else {
                 add(p.ip, 3), add(p.txtip, 3, true);
-                list.push({type: 3, param: coloToProxyMap.get(request.cf?.colo) ?? proxyIpAddrs.US}, {type: 3, param: finallyProxyHost});
+                list.push({type: 3}, {type: 3, param: finallyProxyHost});
             }
         }
         const oldKey = urlListCacheKeys[urlListCacheIndex];
@@ -2373,6 +2374,6 @@ export default {
             handleWebSocketConn(webSocket, request);
             return new Response(null, {status: 101, webSocket: clientSocket});
         }
-        return fetch('https://1345695.github.io/index-404-html/404');
+        return fetch('https://1345695.github.io/index-404-html/');
     }
 };
