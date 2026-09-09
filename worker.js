@@ -2082,7 +2082,7 @@ function mainHtml() {
       // Element UI Tab 切换
       // ==========================================
       function switchProjectTab(tab) {
-          ['cmliu', 'joey', 'ech'].forEach(t => {
+          ['cmliu', 'joey', 'zj52', 'ech'].forEach(t => {
               const btn = document.getElementById('tab_btn_' + t);
               const panel = document.getElementById('tab_panel_' + t);
               if (btn) btn.classList.toggle('active', t === tab);
@@ -2093,10 +2093,10 @@ function mainHtml() {
       async function init() {
           renderProxySelector();
           await loadAccounts();
-          await Promise.all(['cmliu','joey','ech'].map(t => loadVars(t)));
+          await Promise.all(['cmliu','joey','zj52','ech'].map(t => loadVars(t)));
           await loadGlobalConfig();
           loadStats();
-          ['cmliu','joey'].forEach(t => { checkDeployConfig(t); checkUpdate(t); });
+          ['cmliu','joey','zj52'].forEach(t => { checkDeployConfig(t); checkUpdate(t); });
       }
 
       // ====            // ==========================================
