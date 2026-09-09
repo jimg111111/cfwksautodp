@@ -38,7 +38,7 @@ const TEMPLATES = {
         compatibilityDate: "2024-02-20",
         defaultVars: ["u"],
         uuidField: "u",
-        description: "Joey (自动修复) - KV 可选"
+        description: " (自动修复) - KV 可选"
     },
     'zj52': {
         name: "zj52",
@@ -1670,6 +1670,9 @@ function mainHtml() {
                     </div>
                     <div class="el-tab-item flex items-center gap-1.5" id="tab_btn_joey" onclick="switchProjectTab('joey')">
                         <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span> Joey (CFnew)
+                    </div>
+                    <div class="el-tab-item flex items-center gap-1.5" id="tab_btn_zj52" onclick="switchProjectTab('zj52')">
+                        <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span> zj52
                     </div>
                     <div class="el-tab-item flex items-center gap-1.5" id="tab_btn_ech" onclick="switchProjectTab('ech')">
                         <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> ECH-WK
