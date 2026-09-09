@@ -22,7 +22,7 @@ const TEMPLATES = {
         repoUrl: "https://github.com/cmliu/edgetunnel",
         adminPath: "/admin",
         compatibilityDate: "2024-04-05",
-        defaultVars: ["UUID", "PROXYIP", "DOH", "PATH", "URL", "KEY", "ADMIN"],
+        defaultVars: ["ADMIN"],
         uuidField: "UUID",
         description: "CMliu (EdgeTunnel) - 建议开启 KV"
     },
@@ -39,6 +39,15 @@ const TEMPLATES = {
         defaultVars: ["u"],
         uuidField: "u",
         description: "Joey (自动修复) - KV 可选"
+    },
+    'zj52': {
+        name: "zj52",
+        ghUser: "jimg111111",
+        ghRepo: "cfwksautodp",
+        ghBranch: "frprsn",
+        ghPath: "5e4d89c2-5283-4bd6-893c-411926fcf722/zj52.js",
+        defaultVars: [],
+        description: "五协议二传输队列上行 - 缓存发送 - 路径speed限速"
     },
     'ech': {
         name: "ECH - WebSocket Proxy",
@@ -1742,6 +1751,42 @@ function mainHtml() {
                     </div>
                 </div>
 
+                <!-- Tab 2: zj52 项目配置面板 -->
+                <div id="tab_panel_zj52" class="hidden space-y-4 animate-fade-in">
+                    <div class="p-3 rounded-lg border space-y-2.5" style="background-color:var(--bg-subtle); border-color:var(--border-color)">
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center gap-2">
+                                <span class="font-bold text-sm text-blue-600">🔵 zj52 架构配置</span>
+                                <a href="https://github.com/jimg111111/cfwksautodp/tree/frprsn" target="_blank" class="el-tag el-tag-blue">🔗 开源仓库</a>
+                                <span id="badge_zj52" class="el-tag el-tag-gray">Loading</span>
+                            </div>
+                            <button onclick="openVersionHistory('zj52')" class="el-btn el-btn-default el-btn-xs">📜 历史版本/锁定</button>
+                        </div>
+                        <div id="ver_zj52" class="text-xs font-mono p-2 rounded bg-white dark:bg-slate-900 border border-dashed" style="border-color:var(--border-color)">Checking...</div>
+                        <div class="text-xs p-2 rounded flex items-center justify-between" style="background-color:var(--el-color-primary-light); color:var(--el-color-primary)">
+                            <span>💡 订阅获取路径: <b class="font-mono">/{UUID}</b></span>
+                            <span class="text-[11px] opacity-75">核心兼容日期: 2024-02-20</span>
+                        </div>
+                    </div>
+
+                    <!-- 变量列表 -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center">
+                            <label class="text-xs font-bold" style="color:var(--text-primary)">📝 环境变量配置 (VARS_zj52):</label>
+                            <div class="flex gap-1.5">
+                                <button onclick="addVarRow('zj52')" class="el-btn el-btn-default el-btn-xs">➕ 添加变量</button>
+                                <button onclick="selectSyncAccount('zj52')" class="el-btn el-btn-warning el-btn-xs">🔄 同步线上变量</button>
+                            </div>
+                        </div>
+                        <div id="vars_zj52" class="space-y-1.5 p-3 rounded-lg border max-h-[260px] overflow-y-auto" style="background-color:var(--bg-subtle); border-color:var(--border-color)"></div>
+                    </div>
+
+                    <!-- 操作按钮组 -->
+                    <div class="grid grid-cols-3 gap-2 pt-2 border-t" style="border-color:var(--border-light)">
+                        <button onclick="refreshUUID('zj52')" class="el-btn el-btn-default">🎲 随机 UUID</button>
+                        <button onclick="deploy('zj52')" id="btn_deploy_zj52" class="el-btn el-btn-primary font-bold col-span-2">🚀 部署全账号 zj52</button>
+                    </div>
+                </div>
                 <!-- Tab 3: ECH 项目配置面板 -->
                 <div id="tab_panel_ech" class="hidden space-y-4 animate-fade-in">
                     <div class="p-3 rounded-lg border space-y-2.5" style="background-color:var(--bg-subtle); border-color:var(--border-color)">
@@ -1804,6 +1849,7 @@ function mainHtml() {
                         <select id="bd_template" onchange="toggleBatchInputs()" class="el-input">
                             <option value="cmliu">🔴 CMLiu (EdgeTunnel)</option>
                             <option value="joey">🔵 Joey (CFnew 相信光)</option>
+                            <option value="zj52">🔵 zj52</option>
                         </select>
                     </div>
                 </div>
