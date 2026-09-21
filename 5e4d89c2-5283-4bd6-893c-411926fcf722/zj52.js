@@ -65,12 +65,12 @@ const proxyStrategyOrder = ['socks', 'http', 'https', 'sstp', 'turn', 'turns', '
 const dohEndpoints = ['https://cloudflare-dns.com/dns-query', 'https://dns.google/dns-query'];
 const dohNatEndpoints = ['https://cloudflare-dns.com/dns-query', 'https://dns.google/resolve'];
 const finallyProxyHost = 'proxy.zjcloud.us.ci';//兜底proxyip
-const traceUrl = 'https://cp.cloudflare.com/cdn-cgi/trace', proxySuffix = '.proxy.zjcloud.us.ci';
+const traceUrl = 'http://cp.cloudflare.com/cdn-cgi/trace', proxySuffix = '.proxy.zjcloud.us.ci';
 let currentColo = null, pendingPromise = null;
 const getCurrentColo = () => {
     if (currentColo !== null) return currentColo;
     if (pendingPromise !== null) return pendingPromise;
-    return pendingPromise = fetch(traceUrl, {signal: AbortSignal.timeout(10)}).then(r => r.text()).then(t => {
+    return pendingPromise = fetch(traceUrl, {signal: AbortSignal.timeout(200)}).then(r => r.text()).then(t => {
         const i = t.indexOf("colo=");
         return currentColo = i !== -1 ? t.slice(i + 5, i + 8) + proxySuffix : finallyProxyHost
     }).catch(() => currentColo = finallyProxyHost).finally(() => {pendingPromise = null})
@@ -304,20 +304,18 @@ const concurrentDnsResolve = async (hostname, recordType) => {
 };
 const raceAny = promises => {
     let settled = false;
-    const len = promises.length, resolvedList = [], wrapped = new Array(len);
-    for (let i = 0; i < len; i++) wrapped[i] = promises[i].then(res => {
-        if (!res || settled) {
-            res?.close();
-            throw null;
-        }
-        resolvedList.push(res);
-        return res;
-    });
-    return Promise.any(wrapped).then(win => {
-        settled = true;
-        for (let i = 1, l = resolvedList.length; i < l; i++) resolvedList[i]?.close();
-        return win;
-    });
+    const len = promises.length, wrapped = new Array(len);
+    for (let i = 0; i < len; i++) {
+        wrapped[i] = promises[i].then(res => {
+            if (!res || settled) {
+                res?.close();
+                throw null;
+            }
+            settled = true;
+            return res;
+        });
+    }
+    return Promise.any(wrapped);
 };
 const concurrentConnect = (hostname, port, limit = concurrency, socketOptions) => {
     if (limit <= 1) return createConnect(hostname, port, socketOptions);
