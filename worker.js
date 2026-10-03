@@ -38,14 +38,14 @@ const TEMPLATES = {
         defaultVars: [],
         description: "五协议二传输队列上行 - 缓存发送 - 路径speed限速"
     },
-    'ts15': {
-        name: "ts15",
+    'zjjj': {
+        name: "zjjj",
         ghUser: "jimg111111",
         ghRepo: "cfwksautodp",
         ghBranch: "frprsn",
-        ghPath: "99ad70ba-456a-4138-812d-0315af64cb8b/ts15.js",
+        ghPath: "5e4d89c2-5283-4bd6-893c-411926fcf722/zjjj.js",
         defaultVars: [],
-        description: "天书15自用动态负载 - 全局队列单路"
+        description: "精简版-vless"
     },
     'cdqc-dxc': {
         name: "cdqc-dxc",
@@ -1449,7 +1449,7 @@ function mainHtml() {
             <div class="p-4 text-xs space-y-3">
                 <div class="grid grid-cols-2 gap-3">
                     <div><label class="block text-gray-500 mb-1">Worker 名称</label><input id="bd_name" class="input-field font-bold text-indigo-700" placeholder="例如: new-proxy-01"></div>
-                    <div><label class="block text-gray-500 mb-1">选择模板</label><select id="bd_template" onchange="toggleBatchInputs()" class="input-field bg-gray-50"><option value="cmliu">🔴 CMliu (EdgeTunnel)</option><option value="joey">🔵 Joey (相信光)</option><option value="zj52">zj52</option><option value="ts15">天书15</option><option value="cdqc-dxc">cdqc-dxc</option></select></div>
+                    <div><label class="block text-gray-500 mb-1">选择模板</label><select id="bd_template" onchange="toggleBatchInputs()" class="input-field bg-gray-50"><option value="cmliu">🔴 CMliu (EdgeTunnel)</option><option value="joey">🔵 Joey (相信光)</option><option value="zj52">zj52</option><option value="zjjj">zjjj</option><option value="cdqc-dxc">cdqc-dxc</option></select></div>
                 </div>
                 
                 <div class="grid grid-cols-2 gap-3 items-end">
