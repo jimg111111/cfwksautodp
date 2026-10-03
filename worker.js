@@ -340,6 +340,18 @@ async function resolveGithubUrls(env, type, sha = null) {
                         if (files.length > 0) {
                             matchedFile = files.find(f => f.path.includes('少年你相信光吗')) || files[0];
                         }
+                    } else if (type === 'zj52') {
+                        // zj52.js
+                        const files = treeData.tree.filter(item => item.type === 'blob' && item.path.endsWith('zj52.js'));
+                        if (files.length > 0) {
+                            matchedFile = files.find(f => f.path.includes('zj52.js')) || files[0];
+                        }
+                    } else if (type === 'zjjj') {
+                        // zjjj.js
+                        const files = treeData.tree.filter(item => item.type === 'blob' && item.path.endsWith('zjjj.js'));
+                        if (files.length > 0) {
+                            matchedFile = files.find(f => f.path.includes('zjjj.js')) || files[0];
+                        }
                     } else if (t.filePattern) {
                         const files = treeData.tree.filter(item => item.type === 'blob' && item.path.includes(t.filePattern));
                         if (files.length > 0) matchedFile = files[0];
