@@ -46,6 +46,8 @@ const TEMPLATES = {
         ghRepo: "cfwksautodp",
         ghBranch: "frprsn",
         ghPath: "5e4d89c2-5283-4bd6-893c-411926fcf722/zj52.js",
+        filePattern: "zj52.js",
+        repoUrl: "https://github.com/jimg111111/cfwksautodp",
         defaultVars: [],
         description: "五协议二传输队列上行 - 缓存发送 - 路径speed限速"
     },
@@ -55,6 +57,8 @@ const TEMPLATES = {
         ghRepo: "cfwksautodp",
         ghBranch: "frprsn",
         ghPath: "5e4d89c2-5283-4bd6-893c-411926fcf722/zjjj.js",
+        filePattern: "zjjj.js",
+        repoUrl: "https://github.com/jimg111111/cfwksautodp",
         defaultVars: [],
         description: "精简版-vless"
     },
