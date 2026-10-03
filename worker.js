@@ -49,6 +49,15 @@ const TEMPLATES = {
         defaultVars: [],
         description: "五协议二传输队列上行 - 缓存发送 - 路径speed限速"
     },
+    'zjjj': {
+        name: "zjjj",
+        ghUser: "jimg111111",
+        ghRepo: "cfwksautodp",
+        ghBranch: "frprsn",
+        ghPath: "5e4d89c2-5283-4bd6-893c-411926fcf722/zjjj.js",
+        defaultVars: [],
+        description: "精简版-vless"
+    },
     'ech': {
         name: "ECH - WebSocket Proxy",
         ghUser: "hc990275",
@@ -1671,9 +1680,6 @@ function mainHtml() {
                     <div class="el-tab-item flex items-center gap-1.5" id="tab_btn_joey" onclick="switchProjectTab('joey')">
                         <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span> Joey (CFnew)
                     </div>
-                    <div class="el-tab-item flex items-center gap-1.5" id="tab_btn_zj52" onclick="switchProjectTab('zj52')">
-                        <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span> zj52
-                    </div>
                     <div class="el-tab-item flex items-center gap-1.5" id="tab_btn_ech" onclick="switchProjectTab('ech')">
                         <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> ECH-WK
                     </div>
@@ -1754,42 +1760,6 @@ function mainHtml() {
                     </div>
                 </div>
 
-                <!-- Tab 2: zj52 项目配置面板 -->
-                <div id="tab_panel_zj52" class="hidden space-y-4 animate-fade-in">
-                    <div class="p-3 rounded-lg border space-y-2.5" style="background-color:var(--bg-subtle); border-color:var(--border-color)">
-                        <div class="flex justify-between items-center">
-                            <div class="flex items-center gap-2">
-                                <span class="font-bold text-sm text-blue-600">🔵 zj52 架构配置</span>
-                                <a href="https://github.com/jimg111111/cfwksautodp/tree/frprsn" target="_blank" class="el-tag el-tag-blue">🔗 开源仓库</a>
-                                <span id="badge_zj52" class="el-tag el-tag-gray">Loading</span>
-                            </div>
-                            <button onclick="openVersionHistory('zj52')" class="el-btn el-btn-default el-btn-xs">📜 历史版本/锁定</button>
-                        </div>
-                        <div id="ver_zj52" class="text-xs font-mono p-2 rounded bg-white dark:bg-slate-900 border border-dashed" style="border-color:var(--border-color)">Checking...</div>
-                        <div class="text-xs p-2 rounded flex items-center justify-between" style="background-color:var(--el-color-primary-light); color:var(--el-color-primary)">
-                            <span>💡 订阅获取路径: <b class="font-mono">/{UUID}</b></span>
-                            <span class="text-[11px] opacity-75">核心兼容日期: 2024-02-20</span>
-                        </div>
-                    </div>
-
-                    <!-- 变量列表 -->
-                    <div class="space-y-2">
-                        <div class="flex justify-between items-center">
-                            <label class="text-xs font-bold" style="color:var(--text-primary)">📝 环境变量配置 (VARS_zj52):</label>
-                            <div class="flex gap-1.5">
-                                <button onclick="addVarRow('zj52')" class="el-btn el-btn-default el-btn-xs">➕ 添加变量</button>
-                                <button onclick="selectSyncAccount('zj52')" class="el-btn el-btn-warning el-btn-xs">🔄 同步线上变量</button>
-                            </div>
-                        </div>
-                        <div id="vars_zj52" class="space-y-1.5 p-3 rounded-lg border max-h-[260px] overflow-y-auto" style="background-color:var(--bg-subtle); border-color:var(--border-color)"></div>
-                    </div>
-
-                    <!-- 操作按钮组 -->
-                    <div class="grid grid-cols-3 gap-2 pt-2 border-t" style="border-color:var(--border-light)">
-                        <button onclick="refreshUUID('zj52')" class="el-btn el-btn-default">🎲 随机 UUID</button>
-                        <button onclick="deploy('zj52')" id="btn_deploy_zj52" class="el-btn el-btn-primary font-bold col-span-2">🚀 部署全账号 zj52</button>
-                    </div>
-                </div>
                 <!-- Tab 3: ECH 项目配置面板 -->
                 <div id="tab_panel_ech" class="hidden space-y-4 animate-fade-in">
                     <div class="p-3 rounded-lg border space-y-2.5" style="background-color:var(--bg-subtle); border-color:var(--border-color)">
@@ -1853,6 +1823,7 @@ function mainHtml() {
                             <option value="cmliu">🔴 CMLiu (EdgeTunnel)</option>
                             <option value="joey">🔵 Joey (CFnew 相信光)</option>
                             <option value="zj52">🔵 zj52</option>
+                            <option value="zjjj">🔵 zjjj</option>
                         </select>
                     </div>
                 </div>
@@ -2082,7 +2053,7 @@ function mainHtml() {
       // Element UI Tab 切换
       // ==========================================
       function switchProjectTab(tab) {
-          ['cmliu', 'joey', 'zj52', 'ech'].forEach(t => {
+          ['cmliu', 'joey', 'ech'].forEach(t => {
               const btn = document.getElementById('tab_btn_' + t);
               const panel = document.getElementById('tab_panel_' + t);
               if (btn) btn.classList.toggle('active', t === tab);
@@ -2093,10 +2064,10 @@ function mainHtml() {
       async function init() {
           renderProxySelector();
           await loadAccounts();
-          await Promise.all(['cmliu','joey','zj52','ech'].map(t => loadVars(t)));
+          await Promise.all(['cmliu','joey','ech'].map(t => loadVars(t)));
           await loadGlobalConfig();
           loadStats();
-          ['cmliu','joey','zj52'].forEach(t => { checkDeployConfig(t); checkUpdate(t); });
+          ['cmliu','joey'].forEach(t => { checkDeployConfig(t); checkUpdate(t); });
       }
 
       // ====            // ==========================================
