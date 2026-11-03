@@ -1,30 +1,37 @@
-import {connect} from 'cloudflare:sockets';
 const uuid = '5e4d89c2-5283-4bd6-893c-411926fcf722';
 const bufferSize = 256 * 1024;
 const startThreshold = 50 * 1024 * 1024;
-const maxChunkLen = 64 * 1024;
+const maxChunkLen = 4 * 1024;
 const flushTime = 3;
 const concurrency = 4;
-const finallyProxyHost = 'proxy.zjcloud.us.ci';
-const traceUrl = 'http://cp.cloudflare.com/cdn-cgi/trace', proxySuffix = '.proxy.zjcloud.us.ci';
-let currentColo = null, pendingPromise = null;
+const getProxyHost = () => {
+    const e = (Math.random() * 65536) | 0;
+    return String.fromCharCode(112 ^ (e & 1) << 5, 114 ^ (e >> 1 & 1) << 5, 111 ^ (e >> 2 & 1) << 5, 120 ^ (e >> 3 & 1) << 5, 121 ^ (e >> 4 & 1) << 5, 46, 122 ^ (e >> 5 & 1) << 5, 106 ^ (e >> 6 & 1) << 5, 99 ^ (e >> 7 & 1) << 5, 108 ^ (e >> 8 & 1) << 5, 111 ^ (e >> 9 & 1) << 5, 117 ^ (e >> 10 & 1) << 5, 100 ^ (e >> 11 & 1) << 5, 46, 117 ^ (e >> 12 & 1) << 5, 115 ^ (e >> 13 & 1) << 5, 46, 99 ^ (e >> 14 & 1) << 5, 105 ^ (e >> 15 & 1) << 5);
+};
+const proxyHost = getProxyHost(), traceUrl = 'http://cp.cloudflare.com/cdn-cgi/trace';
+let colo = null, currentColo = null, pendingPromise = null;
 const getCurrentColo = () => {
     if (currentColo !== null) return currentColo;
     if (pendingPromise !== null) return pendingPromise;
     return pendingPromise = fetch(traceUrl, {signal: AbortSignal.timeout(200)}).then(r => r.text()).then(t => {
         const i = t.indexOf("colo=");
-        return currentColo = i !== -1 ? t.slice(i + 5, i + 8) + proxySuffix : finallyProxyHost
-    }).catch(() => currentColo = finallyProxyHost).finally(() => {pendingPromise = null})
+        colo = i !== -1 ? t.slice(i + 5, i + 8) : '';
+        return currentColo = colo ? colo + '.' + proxyHost : proxyHost;
+    }).catch(() => {
+        colo = '';
+        return currentColo = proxyHost;
+    }).finally(() => {pendingPromise = null});
 };
 const _h = c => (c > 64 ? (c & 7) + 9 : c & 15);
 const _b = p => (_h(uuid.charCodeAt(p)) << 4) | _h(uuid.charCodeAt(p + 1));
 const U0 = _b(0), U1 = _b(2), U2 = _b(4), U3 = _b(6), U4 = _b(9), U5 = _b(11), U6 = _b(14), U7 = _b(16), U8 = _b(19), U9 = _b(21), U10 = _b(24), U11 = _b(26), U12 = _b(28), U13 = _b(30), U14 = _b(32), U15 = _b(34);
 const textDecoder = new TextDecoder;
+let fetcher = null;
 const concurrentConnect = (hostname, port) => {
     let settled = false;
     const attempts = new Array(concurrency);
     for (let i = 0; i < concurrency; i++) {
-        const socket = connect({hostname, port});
+        const socket = fetcher.connect({hostname, port});
         attempts[i] = socket.opened.then(() => {
             if (settled) {
                 socket.close();
@@ -42,74 +49,60 @@ const manualPipe = async (readable, writable, close, speed) => {
     if (speedLimit) {
         pipeStartThreshold = n > 256 ? Number.MAX_SAFE_INTEGER : n * 1048576;
         let bestSize = pipeBufferSize, bestTime = Infinity, bestDiff = Infinity;
-        for (let size = 262144; size <= 524288; size += 65536) {
+        for (let size = 262144; size <= 524288; size += 4096) {
             const timeMs = Math.max(2, Math.round(size * 1000 / pipeStartThreshold)), diff = Math.abs(size * 1000 / timeMs - pipeStartThreshold);
             if (diff < bestDiff || (diff === bestDiff && timeMs < bestTime)) bestSize = size, bestTime = timeMs, bestDiff = diff;
         }
         pipeBufferSize = bestSize, pipeFlushTime = bestTime;
     }
-    const safeBufferSize = pipeBufferSize - maxChunkLen, fastFlushOffset = maxChunkLen << 1;
+    const safeBufferSize = pipeBufferSize - maxChunkLen;
     let bufferView = new Uint8Array(pipeBufferSize), spareBuffer = new ArrayBuffer(maxChunkLen);
-    let offset = 0, totalBytes = 0, time = 0, timerId = null, resume = null, isReading = false;
-    let needsFlush = false, protectFlush = false, fastFlush = true, done, value;
+    let offset = 0, totalBytes = 0, time = 0, timerId = null, resume = null, done, value;
     const flushBuffer = () => {
-        if (isReading) return needsFlush = true;
-        fastFlush = offset < fastFlushOffset;
         if (offset > 0) (writable.send(bufferView.subarray(0, offset)), offset = 0);
-        needsFlush = false, protectFlush = false, timerId && (clearTimeout(timerId), timerId = null), resume?.(), resume = null;
+        timerId && (clearTimeout(timerId), timerId = null), resume?.(), resume = null;
     };
     const reader = readable.getReader({mode: 'byob'});
     try {
         while (true) {
-            if (offset > 0 && protectFlush) {
+            if (offset > 0) {
                 ({done, value} = await reader.read(new Uint8Array(spareBuffer, 0, maxChunkLen)));
                 bufferView.set(value, offset), spareBuffer = value.buffer;
             } else {
-                isReading = offset > 0;
                 ({done, value} = await reader.read(new Uint8Array(bufferView.buffer, offset, maxChunkLen)));
-                isReading = false, bufferView = new Uint8Array(value.buffer);
+                bufferView = new Uint8Array(value.buffer);
             }
             if (done) break;
             const chunkLen = value.byteLength;
-            if (!chunkLen) {
-                needsFlush && flushBuffer();
-                continue;
-            }
             offset += chunkLen, totalBytes += chunkLen;
-            if (needsFlush) {
-                flushBuffer();
-            } else {
-                if (fastFlush || chunkLen < 28672) {
-                    if (!speedLimit) totalBytes = 0;
-                    time = 2;
-                } else if (totalBytes > pipeStartThreshold) time = pipeFlushTime;
-                timerId ||= setTimeout(flushBuffer, time), protectFlush = chunkLen < maxChunkLen;
-                offset > safeBufferSize && (totalBytes > pipeStartThreshold ? await new Promise(r => resume = r) : flushBuffer());
-            }
+            if (chunkLen < 4096) {
+                if (!speedLimit) totalBytes = 0;
+                time = 2;
+            } else if (totalBytes > pipeStartThreshold) time = pipeFlushTime;
+            timerId ||= setTimeout(flushBuffer, time);
+            offset > safeBufferSize && (totalBytes > pipeStartThreshold ? await new Promise(r => resume = r) : flushBuffer());
         }
-    } catch {offset = 0, close?.()} finally {isReading = false, flushBuffer()}
+    } catch {offset = 0, close?.()} finally {flushBuffer()}
 };
 const createBufferedTcpWriter = (tcpWriter, close) => {
     const buffer = new Uint8Array(32768);
     let offset = 0, timerId = null, closed = false;
     const closeWriter = () => {
         if (closed) return;
-        closed = true;
-        timerId && (clearTimeout(timerId), timerId = null);
-        close?.();
+        closed = true, timerId && (clearTimeout(timerId), timerId = null), close?.();
     };
-    const safeWrite = data => {try {tcpWriter.write(data)} catch {closeWriter()}};
     const flush = () => {
         timerId && (clearTimeout(timerId), timerId = null);
         if (!offset || closed) return;
         const len = offset;
-        offset = 0, safeWrite(buffer.subarray(0, len));
+        offset = 0;
+        try {tcpWriter.write(buffer.subarray(0, len))} catch {closeWriter()}
     };
     return chunk => {
         if (closed) return;
         const data = chunk.constructor === Uint8Array ? chunk : new Uint8Array(chunk), len = data.byteLength;
         if (!len) return;
-        offset + len > 32768 && flush(), buffer.set(data, offset), offset += len, offset === 32768 ? flush() : (timerId ||= setTimeout(flush, 2));
+        offset + len > 32768 && flush(), buffer.set(data, offset), offset += len, offset === 32768 ? flush() : (timerId ||= setTimeout(flush, 1));
     };
 };
 const createAsyncMicrotaskQueue = (consume, close) => {
@@ -164,7 +157,7 @@ const handleSession = async (chunk, state, request, writable, close) => {
     const payload = chunk.subarray(dataOffset);
     let hostname;
     if (addrType === 2) {
-        hostname = textDecoder.decode(addrBytes);
+        hostname = addrBytes.length <= 64 ? String.fromCharCode.apply(null, addrBytes) : textDecoder.decode(addrBytes);
     } else if (addrType === 1) {
         hostname = `${addrBytes[0]}.${addrBytes[1]}.${addrBytes[2]}.${addrBytes[3]}`;
     } else {
@@ -238,7 +231,7 @@ const handleXwebPost = async (request) => {
                         request.body.pipeThrough(upBridge).pipeTo(state.tcpSocket.writable);
                         break;
                     }
-                    used > 24576 ? flush() : (timerId ||= setTimeout(flush, 2));
+                    used > 24576 ? flush() : (timerId ||= setTimeout(flush, 1));
                 } else {
                     state.needMore = false;
                     await handleSession(bufferView.subarray(0, used), state, request, writable, close);
@@ -255,14 +248,15 @@ const handleXwebPost = async (request) => {
 };
 export default {
     async fetch(request) {
+        if (!fetcher) fetcher = request.fetcher;
         if (request.method === 'POST' && request.headers.get('content-type')?.startsWith('application/grpc')) return handleXwebPost(request);
         if (request.headers.get('Upgrade') === 'websocket') {
             const {0: clientSocket, 1: webSocket} = new WebSocketPair();
             // @ts-ignore
-            webSocket.accept({allowHalfOpen: true}), webSocket.binaryType = "arraybuffer";
+            webSocket.accept(), webSocket.binaryType = "arraybuffer";
             handleWebSocketConn(webSocket, request);
             return new Response(null, {status: 101, webSocket: clientSocket});
         }
-        return fetch('https://1345695.github.io/index-404-html/');
+        return new Response(null, {status: 404});
     }
 };
