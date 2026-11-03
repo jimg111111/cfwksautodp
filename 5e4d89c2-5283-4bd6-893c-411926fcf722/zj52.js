@@ -25,7 +25,7 @@ const uuid = '5e4d89c2-5283-4bd6-893c-411926fcf722';//vless使用的uuid
 //**警告**:trojan使用的sha224密钥，需要自己计算，当前设置为密码666的密钥
 //**警告**:trojan使用的sha224密钥，需要自己计算，当前设置为密码666的密钥
 //**警告**:trojan使用的sha224密钥计算网址：https://www.lzltool.com/data-sha224
-const passWordSha224 = '509eece82eb6910bebef9af9496092d3244b6c0d69ef3aaa4b12c565';
+const passWordSha224 = 'amfh7ce7zw2ur4zbe5g2hjudzbfo9byarpma3bnu2c5g3ujq5eo5r3en';
 const socks5AndHttpUser = 'admin';     //socsk5和http协议用户名，设置为空即为无密码验证，需要客户端也为空
 const socks5AndHttpPass = '123456';    //socsk5和http协议密码，设置为空即为无密码验证，需要客户端也为空
 const ssAeadPassword = '123456';       // ss协议 aes-128-gcm 密码（notls）
